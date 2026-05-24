@@ -2,7 +2,8 @@
 
 一款日式简约风格的桌面拨盘番茄钟计时器应用。
 
-![Preview](assets/icon.png)
+<img width="339" height="411" alt="PixPin_2026-05-24_13-49-05" src="https://github.com/user-attachments/assets/2a0543f5-b41f-4de1-b95b-75b336968ff3" />
+
 
 ## 功能特性
 
