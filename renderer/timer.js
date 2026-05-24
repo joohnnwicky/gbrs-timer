@@ -21,7 +21,6 @@ let startAngle = 0; // 点击位置对应的角度（弧度）
 let totalSeconds = 3600; // 60分钟 = 3600秒
 let remainingSeconds = 0;
 let elapsedSeconds = 0;
-let timerInterval = null;
 
 /**
  * 绘制圆环
@@ -47,31 +46,6 @@ function drawRing(fillAngle = 0) {
     ctx.closePath();
     ctx.fillStyle = ringColor;
     ctx.fill();
-
-    // 弧线末端渐变淡出效果
-    const fadeLength = Math.PI / 18; // 约10度的渐变
-    const fadeStart = endAngle - fadeLength;
-
-    if (fillAngle > fadeLength) {
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, outerRadius, fadeStart, endAngle);
-      ctx.arc(centerX, centerY, innerRadius, endAngle, fadeStart, true);
-      ctx.closePath();
-
-      // 创建渐变（从末端向外渐变透明）
-      const gradientAngle = endAngle;
-      const gx1 = centerX + Math.cos(gradientAngle) * innerRadius;
-      const gy1 = centerY + Math.sin(gradientAngle) * innerRadius;
-      const gx2 = centerX + Math.cos(gradientAngle) * outerRadius;
-      const gy2 = centerY + Math.sin(gradientAngle) * outerRadius;
-
-      const gradient = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
-      gradient.addColorStop(0, ringColor);
-      gradient.addColorStop(1, 'rgba(212, 83, 74, 0.3)');
-
-      ctx.fillStyle = gradient;
-      ctx.fill();
-    }
   }
 }
 
@@ -121,5 +95,7 @@ window.timerModule = {
 };
 
 // 初始化：绘制空心圆环
-drawEmptyRing();
-updateTimeDisplay();
+if (canvas && ctx) {
+  drawEmptyRing();
+  updateTimeDisplay();
+}
