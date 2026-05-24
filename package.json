@@ -13,5 +13,25 @@
   },
   "dependencies": {
     "electron-store": "^8.1.0"
+  },
+  "build": {
+    "appId": "com.gbrs.timer",
+    "productName": "GBRS TIME CLOCK",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
