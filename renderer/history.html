@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>历史记录</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Hiragino Sans GB', sans-serif;
+      background-color: #F5F5F0;
+      padding: 20px;
+    }
+
+    .title {
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      font-size: 16px;
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: normal;
+    }
+
+    #historyList {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .history-item {
+      background: #FFF;
+      border: 1px solid #E8E8E3;
+      border-radius: 6px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .history-item:hover {
+      border-color: #CCC;
+    }
+
+    .history-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-date {
+      font-size: 13px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .history-summary {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .history-total {
+      font-size: 12px;
+      color: #D4534A;
+      font-weight: 500;
+    }
+
+    .history-detail {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #EEE;
+    }
+
+    .history-detail.expanded {
+      display: block;
+    }
+
+    .session-item {
+      font-size: 11px;
+      color: #666;
+      padding: 4px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .session-time {
+      color: #333;
+    }
+
+    .empty-message {
+      text-align: center;
+      color: #999;
+      font-size: 13px;
+      padding: 40px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="title">历史记录</h1>
+  <div id="historyList"></div>
+
+  <script src="storage.js"></script>
+  <script src="history.js"></script>
+</body>
+</html>
