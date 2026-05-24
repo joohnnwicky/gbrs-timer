@@ -131,9 +131,10 @@ function completeTimer() {
   // 显示完成
   timerModule.showComplete();
 
-  // 添加记录并更新累计显示（storageModule 将在 Task 4 创建）
+  // 添加记录并更新累计显示
   if (window.storageModule) {
-    window.storageModule.addSession(60);
+    const state = timerModule.getState();
+    window.storageModule.addSession(state.elapsedSeconds, state.startAngle);
     window.storageModule.updateTotalDisplay();
   }
 
