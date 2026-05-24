@@ -131,6 +131,34 @@ function completeTimer() {
   // 显示完成
   timerModule.showComplete();
 
+  // 播放提示音
+  async function playCompleteSound() {
+    const settings = await window.storageModule.getSettings();
+    if (settings.soundEnabled) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.5);
+
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.5);
+      } catch (e) {
+        console.log('Sound generation failed:', e);
+      }
+    }
+  }
+  playCompleteSound();
+
   // 添加记录并更新累计显示
   if (window.storageModule) {
     const state = timerModule.getState();
