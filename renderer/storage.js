@@ -102,7 +102,8 @@ async function getSettings() {
   const settings = await window.electronAPI.store.get('settings');
   return {
     soundEnabled: settings?.soundEnabled !== undefined ? settings.soundEnabled : true,
-    soundType: settings?.soundType || 'soft-bell'
+    soundType: settings?.soundType || 'soft-bell',
+    soundFile: settings?.soundFile || null
   };
 }
 

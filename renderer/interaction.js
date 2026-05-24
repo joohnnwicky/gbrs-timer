@@ -1,265 +1,226 @@
-// interaction.js - 点击交互与计时器控制
+// interaction.js
 
-// 从 window 获取 timerModule
-const timerModule = window.timerModule;
-
-// DOM 元素
-const canvas = document.getElementById('ringCanvas');
-const pauseBtn = document.getElementById('pauseBtn');
-const resetBtn = document.getElementById('resetBtn');
-const historyBtn = document.getElementById('historyBtn');
-const closeBtn = document.getElementById('closeBtn');
-
-// setInterval 引用
 let timerInterval = null;
+let currentAudio = null;
 
-/**
- * 计算点击位置相对于圆环中心的角度
- * @param {MouseEvent} event - 点击事件
- * @returns {number} 角度（弧度），顶部为0，顺时针增加
- */
-function calculateAngle(event) {
+function handleClick(event) {
+  const canvas = document.getElementById('ringCanvas');
   const rect = canvas.getBoundingClientRect();
-  const x = event.clientX - rect.left - 80; // centerX = 80
-  const y = event.clientY - rect.top - 80;  // centerY = 80
-  // Math.atan2(x, -y) 使顶部为0，顺时针为正
-  let angle = Math.atan2(x, -y);
-  if (angle < 0) {
-    angle += 2 * Math.PI;
+
+  // 点击位置相对于圆心
+  const x = event.clientX - rect.left - 80;
+  const y = event.clientY - rect.top - 80;
+
+  // Canvas角度：右侧=0，顺时针增加
+  // atan2(y, x) 给出标准角度
+  let angle = Math.atan2(y, x);
+
+  console.log('Click at canvas angle:', angle, 'degrees:', angle * 180 / Math.PI);
+
+  // 计算从点击位置顺时针到顶部(-90度)的弧长
+  // 顶部在Canvas中是 -π/2
+  const topAngle = -Math.PI / 2;
+
+  // 从点击位置顺时针到顶部的弧度
+  let arcToTop = topAngle - angle;
+  if (arcToTop <= 0) {
+    arcToTop += 2 * Math.PI;
   }
-  return angle;
-}
 
-/**
- * 将角度转换为分钟数（0-60）
- * @param {number} angle - 角度（弧度）
- * @returns {number} 分钟数
- */
-function angleToMinutes(angle) {
-  return Math.round((angle / (2 * Math.PI)) * 60);
-}
+  // 弧度转分钟
+  const minutes = Math.round((arcToTop / (2 * Math.PI)) * 60);
+  const seconds = minutes * 60;
 
-/**
- * 启动计时器
- * @param {number} clickAngle - 点击位置的角度
- */
-function startTimer(clickAngle) {
-  const state = timerModule.getState();
+  console.log('Minutes:', minutes, 'Seconds:', seconds);
 
-  // 如果已经在运行且未暂停，则忽略
-  if (state.isRunning && !state.isPaused) {
+  if (seconds < 60) {
+    console.log('Too short, skip');
     return;
+  }
+
+  const tm = window.timerModule;
+  if (!tm) {
+    console.error('timerModule missing');
+    return;
+  }
+
+  // 停止之前的计时器
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
 
   // 设置状态
-  timerModule.setState({
-    startAngle: clickAngle,
+  tm.setState({
+    startAngle: angle,
+    totalSeconds: seconds,
+    remainingSeconds: seconds,
+    elapsedSeconds: 0,
     isRunning: true,
-    isPaused: false,
-    totalSeconds: 3600,
-    remainingSeconds: 3600,
-    elapsedSeconds: 0
+    isPaused: false
   });
 
-  // 绘制完整圆环
-  timerModule.drawRing(2 * Math.PI);
+  // 绘制弧线
+  tm.drawRing(arcToTop);
+  tm.updateTimeDisplay();
 
-  // 更新时间显示
-  timerModule.updateTimeDisplay();
+  // 开始倒计时
+  timerInterval = setInterval(() => {
+    const state = tm.getState();
+    if (state.isPaused) return;
 
-  // 启动定时器
-  timerInterval = setInterval(tick, 1000);
+    const newRem = state.remainingSeconds - 1;
+    tm.setState({ remainingSeconds: newRem, elapsedSeconds: state.elapsedSeconds + 1 });
+    tm.updateTimeDisplay();
 
-  // 重置暂停按钮
-  resetPauseButton();
-}
+    // 计算剩余弧度
+    const ratio = newRem / state.totalSeconds;
+    tm.drawRing(ratio * arcToTop);
 
-/**
- * 计时器滴答函数
- */
-function tick() {
-  const state = timerModule.getState();
+    if (newRem <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      tm.setState({ isRunning: false, remainingSeconds: 0 });
+      tm.drawEmptyRing();
+      tm.showComplete();
+      playSound();
 
-  // 如果暂停，直接返回
-  if (state.isPaused) {
-    return;
-  }
-
-  // 更新时间
-  const newRemaining = state.remainingSeconds - 1;
-  const newElapsed = state.elapsedSeconds + 1;
-  timerModule.setState({
-    remainingSeconds: newRemaining,
-    elapsedSeconds: newElapsed
-  });
-
-  // 更新显示
-  timerModule.updateTimeDisplay();
-
-  // 计算填充角度
-  const fillAngle = (newRemaining / state.totalSeconds) * 2 * Math.PI;
-
-  // 绘制圆环
-  timerModule.drawRing(fillAngle);
-
-  // 如果时间到，完成计时器
-  if (newRemaining <= 0) {
-    completeTimer();
-  }
-}
-
-/**
- * 完成计时器
- */
-function completeTimer() {
-  // 清除定时器
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-
-  // 重置状态
-  timerModule.setState({
-    isRunning: false,
-    isPaused: false,
-    remainingSeconds: 0
-  });
-
-  // 绘制空心圆环
-  timerModule.drawEmptyRing();
-
-  // 显示完成
-  timerModule.showComplete();
-
-  // 播放提示音
-  async function playCompleteSound() {
-    const settings = await window.storageModule.getSettings();
-    if (settings.soundEnabled) {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.5);
-
-        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-
-        oscillator.start(audioCtx.currentTime);
-        oscillator.stop(audioCtx.currentTime + 0.5);
-      } catch (e) {
-        console.log('Sound generation failed:', e);
+      if (window.storageModule) {
+        window.storageModule.addSession(state.elapsedSeconds, angle);
+        window.storageModule.updateTotalDisplay();
       }
     }
-  }
-  playCompleteSound();
+  }, 1000);
 
-  // 添加记录并更新累计显示
-  if (window.storageModule) {
-    const state = timerModule.getState();
-    window.storageModule.addSession(state.elapsedSeconds, state.startAngle);
-    window.storageModule.updateTotalDisplay();
+  // 重置按钮
+  const pauseBtn = document.getElementById('pauseBtn');
+  if (pauseBtn) {
+    pauseBtn.textContent = '暂停';
+    pauseBtn.classList.remove('active');
   }
-
-  // 重置暂停按钮
-  resetPauseButton();
 }
 
-/**
- * 切换暂停状态
- */
-function togglePause() {
-  const state = timerModule.getState();
-
-  if (!state.isRunning) {
-    return;
-  }
+function handlePause() {
+  const tm = window.timerModule;
+  if (!tm) return;
+  const state = tm.getState();
+  if (!state.isRunning) return;
 
   const newPaused = !state.isPaused;
-  timerModule.setState({ isPaused: newPaused });
+  tm.setState({ isPaused: newPaused });
 
-  // 更新暂停按钮
-  pauseBtn.textContent = newPaused ? '继续' : '暂停';
-  pauseBtn.classList.toggle('active', newPaused);
+  const pauseBtn = document.getElementById('pauseBtn');
+  if (pauseBtn) {
+    pauseBtn.textContent = newPaused ? '继续' : '暂停';
+    pauseBtn.classList.toggle('active', newPaused);
+  }
 }
 
-/**
- * 重置计时器
- */
-function resetTimer() {
-  // 清除定时器
+function handleReset() {
+  // 停止音频
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+
   if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
   }
 
-  // 重置状态
-  timerModule.setState({
+  const tm = window.timerModule;
+  if (!tm) return;
+
+  tm.setState({
     isRunning: false,
     isPaused: false,
-    totalSeconds: 3600,
     remainingSeconds: 0,
-    elapsedSeconds: 0
+    elapsedSeconds: 0,
+    totalSeconds: 0
   });
+  tm.drawEmptyRing();
+  tm.updateTimeDisplay();
 
-  // 绘制空心圆环
-  timerModule.drawEmptyRing();
-
-  // 更新时间显示
-  timerModule.updateTimeDisplay();
-
-  // 重置暂停按钮
-  resetPauseButton();
+  const pauseBtn = document.getElementById('pauseBtn');
+  if (pauseBtn) {
+    pauseBtn.textContent = '暂停';
+    pauseBtn.classList.remove('active');
+  }
 }
 
-/**
- * 重置暂停按钮状态
- */
-function resetPauseButton() {
-  pauseBtn.textContent = '暂停';
-  pauseBtn.classList.remove('active');
+async function handleSelectSound() {
+  if (!window.electronAPI) return;
+
+  const filePath = await window.electronAPI.selectSoundFile();
+  if (filePath) {
+    console.log('Sound file selected:', filePath);
+    const soundBtn = document.getElementById('soundBtn');
+    if (soundBtn) {
+      soundBtn.textContent = '已设置';
+    }
+  }
 }
 
-// 事件绑定
-if (canvas) {
-  canvas.addEventListener('click', (event) => {
-    const angle = calculateAngle(event);
-    const minutes = angleToMinutes(angle);
-    console.log(`Clicked at ${minutes} minutes (angle: ${(angle * 180 / Math.PI).toFixed(1)}deg)`);
-    startTimer(angle);
-  });
+async function playSound() {
+  try {
+    const settings = await (window.storageModule?.getSettings?.() || { soundEnabled: true });
+    const soundFile = settings.soundFile;
+
+    if (soundFile && settings.soundEnabled) {
+      // 使用自定义mp3文件
+      currentAudio = new Audio('file:///' + soundFile.replace(/\\/g, '/'));
+      currentAudio.volume = 1.0;
+      currentAudio.play().catch(e => {
+        console.log('Custom audio failed, using default:', e);
+        currentAudio = null;
+        playDefaultSound();
+      });
+    } else if (settings.soundEnabled) {
+      playDefaultSound();
+    }
+  } catch (e) {
+    console.log('Sound failed:', e);
+  }
 }
 
-if (pauseBtn) {
-  pauseBtn.addEventListener('click', togglePause);
+function playDefaultSound() {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.5);
+  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime + 0.5);
 }
 
-if (resetBtn) {
-  resetBtn.addEventListener('click', resetTimer);
+// 初始化事件
+function init() {
+  const canvas = document.getElementById('ringCanvas');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const historyBtn = document.getElementById('historyBtn');
+  const closeBtn = document.getElementById('closeBtn');
+  const soundBtn = document.getElementById('soundBtn');
+
+  if (canvas) {
+    canvas.addEventListener('click', handleClick);
+    console.log('Canvas click bound');
+  } else {
+    console.error('Canvas not found');
+  }
+
+  if (pauseBtn) pauseBtn.addEventListener('click', handlePause);
+  if (resetBtn) resetBtn.addEventListener('click', handleReset);
+  if (historyBtn) historyBtn.addEventListener('click', () => window.electronAPI && window.electronAPI.openHistory());
+  if (closeBtn) closeBtn.addEventListener('click', () => window.electronAPI && window.electronAPI.closeWindow());
+  if (soundBtn) soundBtn.addEventListener('click', handleSelectSound);
 }
 
-if (historyBtn) {
-  historyBtn.addEventListener('click', () => {
-    window.electronAPI.openHistory();
-  });
-}
-
-if (closeBtn) {
-  closeBtn.addEventListener('click', () => {
-    window.electronAPI.closeWindow();
-  });
-}
-
-// 导出函数供其他模块使用
-window.interactionModule = {
-  calculateAngle,
-  angleToMinutes,
-  startTimer,
-  togglePause,
-  resetTimer
-};
+init();
+console.log('interaction.js loaded');

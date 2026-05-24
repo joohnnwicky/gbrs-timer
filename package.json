@@ -2,6 +2,7 @@
   "name": "gbrs-timer",
   "version": "1.0.0",
   "description": "GBRS TIME CLOCK - 日式简约拨盘番茄钟",
+  "author": "GBRS",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -25,13 +26,8 @@
       "!dist/**"
     ],
     "win": {
-      "target": "nsis",
+      "target": "dir",
       "icon": "assets/icon.png"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": true,
-      "allowToChangeInstallationDirectory": true
     }
   }
 }

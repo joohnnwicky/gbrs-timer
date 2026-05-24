@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const Store = require('electron-store');
 const path = require('path');
 
@@ -28,7 +28,8 @@ function createMainWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      webSecurity: false
     },
     backgroundColor: '#F5F5F0'
   });
@@ -57,7 +58,8 @@ function createHistoryWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      webSecurity: false
     },
     backgroundColor: '#F5F5F0'
   });
@@ -83,6 +85,19 @@ ipcMain.handle('store-get', (event, key) => {
 
 ipcMain.handle('store-set', (event, key, value) => {
   store.set(key, value);
+});
+
+ipcMain.handle('select-sound-file', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: '选择提示音文件',
+    filters: [{ name: '音频文件', extensions: ['mp3', 'wav', 'ogg'] }],
+    properties: ['openFile']
+  });
+  if (!result.canceled && result.filePaths.length > 0) {
+    store.set('settings.soundFile', result.filePaths[0]);
+    return result.filePaths[0];
+  }
+  return null;
 });
 
 app.whenReady().then(() => {
