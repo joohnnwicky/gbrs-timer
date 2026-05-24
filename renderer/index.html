@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GBRS TIME CLOCK</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">GBRS TIME CLOCK</h1>
+      <div class="close-btn" id="closeBtn">×</div>
+    </div>
+
+    <div class="total-time">
+      今日累计：<span id="totalMinutes">0</span>分钟
+    </div>
+
+    <div class="timer-ring">
+      <canvas id="ringCanvas" width="160" height="160"></canvas>
+      <div class="center-time" id="centerTime">00:00</div>
+      <div class="center-status" id="centerStatus"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="historyBtn">历史</button>
+      <button class="btn" id="pauseBtn">暂停</button>
+      <button class="btn" id="resetBtn">重置</button>
+    </div>
+  </div>
+
+  <script src="timer.js"></script>
+  <script src="interaction.js"></script>
+  <script src="storage.js"></script>
+</body>
+</html>

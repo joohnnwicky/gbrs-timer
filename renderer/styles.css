@@ -1,0 +1,129 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  font-family: 'Segoe UI', 'Hiragino Sans GB', sans-serif;
+  background-color: #F5F5F0;
+  overflow: hidden;
+}
+
+.container {
+  width: 280px;
+  height: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  -webkit-app-region: drag;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.title {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: #333;
+  font-weight: normal;
+  letter-spacing: 1px;
+}
+
+.close-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
+  color: #999;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.total-time {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 10px;
+  font-weight: 300;
+}
+
+.timer-ring {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin-bottom: 15px;
+  -webkit-app-region: no-drag;
+}
+
+#ringCanvas {
+  cursor: pointer;
+}
+
+.center-time {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Roboto Mono', 'Consolas', monospace;
+  font-size: 20px;
+  font-weight: 300;
+  color: #333;
+}
+
+.center-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: #D4534A;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  -webkit-app-region: no-drag;
+}
+
+.btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  border: 1px solid #DDD;
+  background: #FFF;
+  color: #666;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  background: #F0F0F0;
+  border-color: #CCC;
+}
+
+.btn:active {
+  background: #E8E8E8;
+}
+
+.btn.active {
+  background: #D4534A;
+  color: #FFF;
+  border-color: #D4534A;
+}

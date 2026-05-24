@@ -1,0 +1,17 @@
+{
+  "name": "gbrs-timer",
+  "version": "1.0.0",
+  "description": "GBRS TIME CLOCK - 日式简约拨盘番茄钟",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  }
+}
